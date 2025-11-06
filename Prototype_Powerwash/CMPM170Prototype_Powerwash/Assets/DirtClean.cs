@@ -10,6 +10,10 @@ public class DirtPainter : MonoBehaviour
     [Header("Brush Settings")]
     public int brushSize = 50;
 
+    // --- THIS IS THE MISSING LINE CAUSING YOUR ERROR ---
+    public int cleanedPixelCount = 0;
+    // --------------------------------------------------
+
     private Texture2D maskTexture;
     private Material carMaterial;
     private Color[] brushPixels;
@@ -74,8 +78,16 @@ public class DirtPainter : MonoBehaviour
                 paintX = Mathf.Clamp(paintX, 0, maskTextureWidth - brushSize);
                 paintY = Mathf.Clamp(paintY, 0, maskTextureHeight - brushSize);
 
-                maskTexture.SetPixels(paintX, paintY, brushSize, brushSize, brushPixels);
+                Color[] currentPixels = maskTexture.GetPixels(paintX, paintY, brushSize, brushSize);
+                for (int i = 0; i < currentPixels.Length; i++)
+                {
+                    if (currentPixels[i].r > 0.5f)
+                    {
+                        cleanedPixelCount++;
+                    }
+                }
 
+                maskTexture.SetPixels(paintX, paintY, brushSize, brushSize, brushPixels);
                 needsUpdate = true;
             }
         }
@@ -88,6 +100,7 @@ public class DirtPainter : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.R))
         {
+            cleanedPixelCount = 0;
             Start();
         }
     }
