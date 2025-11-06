@@ -8,10 +8,7 @@ public class DirtPainter : MonoBehaviour
     public int maskTextureHeight = 1024;
 
     [Header("Brush Settings")]
-    public int brushSize = 50; 
-
-    // Public variable for the manager script to read
-    public int cleanedPixelCount = 0;
+    public int brushSize = 50;
 
     private Texture2D maskTexture;
     private Material carMaterial;
@@ -33,7 +30,7 @@ public class DirtPainter : MonoBehaviour
         maskTexture.Apply();
 
         carMaterial.SetTexture("_MaskTexture", maskTexture);
-        
+
         CreateBrush();
     }
 
@@ -70,25 +67,15 @@ public class DirtPainter : MonoBehaviour
 
                 int x = (int)(uv.x * maskTextureWidth);
                 int y = (int)(uv.y * maskTextureHeight);
-                
+
                 int paintX = x - (brushSize / 2);
                 int paintY = y - (brushSize / 2);
 
                 paintX = Mathf.Clamp(paintX, 0, maskTextureWidth - brushSize);
                 paintY = Mathf.Clamp(paintY, 0, maskTextureHeight - brushSize);
 
-                // Count pixels before painting them
-                Color[] currentPixels = maskTexture.GetPixels(paintX, paintY, brushSize, brushSize);
-                for (int i = 0; i < currentPixels.Length; i++)
-                {
-                    // If the pixel is currently white (r > 0.5), we are about to clean it.
-                    if (currentPixels[i].r > 0.5f)
-                    {
-                        cleanedPixelCount++;
-                    }
-                }
-                
                 maskTexture.SetPixels(paintX, paintY, brushSize, brushSize, brushPixels);
+
                 needsUpdate = true;
             }
         }
@@ -101,9 +88,7 @@ public class DirtPainter : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.R))
         {
-            // Reset counter if we reset the car
-            cleanedPixelCount = 0;
-            Start(); 
+            Start();
         }
     }
 }

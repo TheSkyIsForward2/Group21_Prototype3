@@ -8,18 +8,23 @@ public class DirtManager : MonoBehaviour
     public static DirtManager Instance { get { return _instance; } }
 
     [Header("Spawn Settings")]
-    public Transform skullCenter;
     public Vector2 spawnAreaSize;
     public int layers = 5;
     public float layerSpacing = 0.1f;
     public int particlesPerLayer = 50;
 
     [Header("Cleaning Settings")]
-    public float cleanRadius = 0.5f; // Radius around mouse to remove particles
+    public float cleanRadius = 0.5f;
+    public float scrubDistanceModifier = 0.05f;
 
     private List<GameObject> allDirtParticles = new List<GameObject>();
     [SerializeField] private Camera cam;
 
+    private Vector3 _scrubPosition;
+    private float _lastScrubTime;
+    private float _scrubInterval = 1f;
+    
+    
     private void Awake()
     {
         // Singleton enforcement
@@ -39,6 +44,12 @@ public class DirtManager : MonoBehaviour
 
     private void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Mouse0))
+        {
+            _scrubPosition = Input.mousePosition;
+            Debug.Log(_scrubPosition);
+        }
+        
         if (Input.GetMouseButton(0))
         {
             CleanAtMouse();
@@ -66,7 +77,7 @@ public class DirtManager : MonoBehaviour
         float y = Random.Range(-spawnAreaSize.y / 2f, spawnAreaSize.y / 2f);
         float z = -layer * layerSpacing;
 
-        t.transform.position = new Vector3(skullCenter.position.x + x, skullCenter.position.y + y, skullCenter.position.z + z);
+        t.transform.position = new Vector3(x, y, z);
         t.SetActive(true);
 
         return t;
@@ -78,6 +89,9 @@ public class DirtManager : MonoBehaviour
         mousePos.z = cam.nearClipPlane + 1f; // distance from camera
         Vector3 worldPos = cam.ScreenToWorldPoint(mousePos);
 
+        if (!(Vector3.Distance(worldPos, _scrubPosition) > scrubDistanceModifier))
+            return;
+        
         // Find all active particles in the radius
         for (int layer = layers - 1; layer >= 0; layer--) // top layer first
         {
@@ -85,16 +99,22 @@ public class DirtManager : MonoBehaviour
             {
                 if (!dirt.activeInHierarchy) continue;
                 float zLayer = -layer * layerSpacing;
-                if (Mathf.Abs(dirt.transform.position.z - (skullCenter.position.z + zLayer)) > 0.01f) continue;
+                if (Mathf.Abs(dirt.transform.position.z - (zLayer)) > 0.01f) continue;
 
                 float dist = Vector2.Distance(new Vector2(dirt.transform.position.x, dirt.transform.position.y),
                                               new Vector2(worldPos.x, worldPos.y));
 
                 if (dist <= cleanRadius)
                 {
-                    dirt.SetActive(false); // "remove" particle
+                    dirt.GetComponent<DirtHealth>().Scrub();
                 }
             }
+        }
+
+        if (_lastScrubTime + _scrubInterval <= Time.unscaledTime)
+        {
+            _lastScrubTime = Time.unscaledTime;
+            _scrubPosition = mousePos;
         }
     }
 }
