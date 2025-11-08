@@ -22,8 +22,6 @@ public class DirtManager : MonoBehaviour
 
     private Vector3 _scrubPosition;
     private float _lastScrubTime;
-    private float _scrubInterval = 1f;
-    
     
     private void Awake()
     {
@@ -89,7 +87,7 @@ public class DirtManager : MonoBehaviour
         mousePos.z = cam.nearClipPlane + 1f; // distance from camera
         Vector3 worldPos = cam.ScreenToWorldPoint(mousePos);
 
-        if (!(Vector3.Distance(worldPos, _scrubPosition) > scrubDistanceModifier))
+        if (!(Vector3.Distance(mousePos, _scrubPosition) > scrubDistanceModifier))
             return;
         
         // Find all active particles in the radius
@@ -111,10 +109,6 @@ public class DirtManager : MonoBehaviour
             }
         }
 
-        if (_lastScrubTime + _scrubInterval <= Time.unscaledTime)
-        {
-            _lastScrubTime = Time.unscaledTime;
-            _scrubPosition = mousePos;
-        }
+        _scrubPosition = mousePos;
     }
 }

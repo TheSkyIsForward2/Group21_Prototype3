@@ -442,7 +442,7 @@ MonoBehaviour:
   layerSpacing: 0.1
   particlesPerLayer: 50
   cleanRadius: 0.5
-  scrubDistanceModifier: 1
+  scrubDistanceModifier: 2
   cam: {fileID: 483739891}
 --- !u!1 &1077224026
 GameObject:
